@@ -6,8 +6,10 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data @AllArgsConstructor
-public class YoungestEldestWorkers {
-    private String type;
+public class WorkerDTO {
+    private int id;
     private String name;
     private LocalDate birthday;
+    private WorkerLevel level;
+    private int salary;
 }

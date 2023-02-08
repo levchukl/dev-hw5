@@ -6,6 +6,7 @@ import org.example.prefs.Prefs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,25 +15,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseQueryService {
+    private Database database = Database.getInstance();
 
     public List<MaxProjectCountClient> findMaxProjectsClient() throws IOException {
+
         List<MaxProjectCountClient> clients = new ArrayList<>();
         String selectMaxProjectClientFileName = new Prefs().getPref(Prefs.SELECT_MAX_PROJECTS_CLIENT_FILE_PATH);
         String selectSql = Files.readString(Paths.get(selectMaxProjectClientFileName));
 
-        Database database = Database.getInstance();
-        try (Statement statement = database.getConnection().createStatement()) {
-            try (ResultSet resultSet = statement.executeQuery(selectSql)) {
-                while (resultSet.next()) {
-                    MaxProjectCountClient client = new MaxProjectCountClient();
-                    String name = resultSet.getString("name");
-                    int project_count = resultSet.getInt("project_count");
-                    client.setName(name);
-                    client.setProject_count(project_count);
-                    clients.add(client);
-                }
+        try(PreparedStatement  preparedStatement = database.getConnection().prepareStatement(selectSql)){
+        try(ResultSet resultSet = preparedStatement.executeQuery(selectSql)) {
+            while (resultSet.next()) {
+                clients.add(new MaxProjectCountClient(
+                        resultSet.getString("name"),
+                        resultSet.getInt("project_count")
+                ));
             }
-        } catch (SQLException e) {
+        }
+            } catch (SQLException e){
             e.printStackTrace();
         }
         database.close();
@@ -44,17 +44,13 @@ public class DatabaseQueryService {
         String maxSalaryWorkerFileName = new Prefs().getPref(Prefs.SELECT_MAX_SALARY_WORKER_FILE_PATH);
         String selectSql = Files.readString(Paths.get(maxSalaryWorkerFileName));
 
-        Database database = Database.getInstance();
-
-        try (Statement statement = database.getConnection().createStatement()) {
-            try (ResultSet resultSet = statement.executeQuery(selectSql)) {
+        try (PreparedStatement preparedStatement = database.getConnection().prepareStatement(selectSql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery(selectSql)) {
                 while (resultSet.next()) {
-                    MaxSalaryWorker worker = new MaxSalaryWorker();
-                    String name = resultSet.getString("name");
-                    int salary = resultSet.getInt("salary");
-                    worker.setName(name);
-                    worker.setSalary(salary);
-                    workers.add(worker);
+                    workers.add(new MaxSalaryWorker(
+                            resultSet.getString("name"),
+                            resultSet.getInt("salary")
+                    ));
                 }
             }
         } catch (SQLException e) {
@@ -70,19 +66,14 @@ public class DatabaseQueryService {
             String youngestEldestWorkersFileName = new Prefs().getPref(Prefs.SELECT_YOUNGEST_ELDEST_WORKERS_FILE_PATH);
             String selectSql = Files.readString(Paths.get(youngestEldestWorkersFileName));
 
-        Database database = Database.getInstance();
-
-        try(Statement statement = database.getConnection().createStatement()) {
-            try (ResultSet resultSet = statement.executeQuery(selectSql)) {
+        try(PreparedStatement preparedStatement = database.getConnection().prepareStatement(selectSql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery(selectSql)) {
                 while (resultSet.next()) {
-                    YoungestEldestWorkers worker = new YoungestEldestWorkers();
-                    String type = resultSet.getString("type");
-                    String name = resultSet.getString("name");
-                    LocalDate birthday = LocalDate.parse(resultSet.getString("birthday"));
-                    worker.setName(name);
-                    worker.setType(type);
-                    worker.setBirthday(birthday);
-                    workers.add(worker);
+                    workers.add(new YoungestEldestWorkers(
+                            resultSet.getString("type"),
+                            resultSet.getString("name"),
+                            LocalDate.parse(resultSet.getString("birthday"))
+                    ));
                 }
             }
         }catch (SQLException e){
@@ -97,16 +88,13 @@ public class DatabaseQueryService {
         String projectPriceFileName = new Prefs().getPref(Prefs.SELECT_PROJECT_PRICES_FILE_PATH);
         String selectSql = Files.readString(Paths.get(projectPriceFileName));
 
-        Database database = Database.getInstance();
-        try(Statement statement = database.getConnection().createStatement()) {
-            try (ResultSet resultSet = statement.executeQuery(selectSql)) {
+        try(PreparedStatement preparedStatement = database.getConnection().prepareStatement(selectSql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery(selectSql)) {
                 while (resultSet.next()) {
-                    ProjectPrices projectPrices = new ProjectPrices();
-                    int id = resultSet.getInt("id");
-                    int price = resultSet.getInt("price");
-                    projectPrices.setId(id);
-                    projectPrices.setPrice(price);
-                    prices.add(projectPrices);
+                    prices.add(new ProjectPrices(
+                            resultSet.getInt("id"),
+                            resultSet.getInt("price")
+                    ));
                 }
             }
         }catch (SQLException e){
@@ -121,17 +109,13 @@ public class DatabaseQueryService {
         String longestProjectFileName = new Prefs().getPref(Prefs.SELECT_LONGEST_PROJECT_FILE_PATH);
         String selectSql = Files.readString(Paths.get(longestProjectFileName));
 
-        Database database = Database.getInstance();
-
-        try (Statement statement = database.getConnection().createStatement()) {
-            try (ResultSet resultSet = statement.executeQuery(selectSql)) {
+        try (PreparedStatement preparedStatement = database.getConnection().prepareStatement(selectSql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery(selectSql)) {
                 while (resultSet.next()) {
-                    LongestProject project = new LongestProject();
-                    int name = resultSet.getInt("name");
-                    int month_count = resultSet.getInt("month_count");
-                    project.setName(name);
-                    project.setMonth_count(month_count);
-                    projects.add(project);
+                    projects.add(new LongestProject(
+                            resultSet.getInt("name"),
+                            resultSet.getInt("month_count")
+                    ));
                 }
             }
         } catch (SQLException e) {
